@@ -26,3 +26,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# RAG 向量索引(本地用 `npm run build:index` 生成)
+/data/corpus-index.json

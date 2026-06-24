@@ -19,6 +19,13 @@
 - ✅ 旧对话自动压缩成"长期记忆"并注入系统提示词——滑出窗口的细节依然"记得"
 - ⬜ 账号 + 加密的服务端记忆(让记忆跨设备)
 
+RAG 心理学方法库
+- ✅ 25 张结构化"技术卡片"语料(焦虑/纠结/内耗/迷茫/通用),自写为主、融入 WHO ACT 五项技能(改写署名,CC BY-NC-SA)
+- ✅ BGE-M3(SiliconFlow)语义检索 + 本地余弦,top-k 注入
+- ✅ **防爹味约束**:检索内容仅作"内部方法参考",强制模型消化成口语、不引用/不报术语
+- ✅ 软失败:没 key / 没索引 → 自动关闭 RAG,聊天照常
+- ⬜ reranker、扩充语料、引用来源标注
+
 下一步
 - ⬜ 第 3 刀:账号、数据加密、部署上线
 
@@ -33,6 +40,9 @@ npm install
 cp .env.example .env.local
 # 在 .env.local 填入 DEEPSEEK_API_KEY
 
+# (可选)启用 RAG 心理学方法库:填入 SILICONFLOW_API_KEY 后生成向量索引
+npm run build:index
+
 npm run dev
 # 打开 http://localhost:3000
 ```
@@ -43,11 +53,20 @@ npm run dev
 app/
   page.tsx            聊天界面(客户端)
   api/chat/route.ts   接口:安全检查 → 编排 → 流式回应
+  api/memory/route.ts 长期记忆压缩
 lib/
-  prompts.ts          灵魂:系统提示词 + 方法库
-  orchestrator.ts     组装发给模型的消息
-  deepseek.ts         DeepSeek 流式客户端
+  prompts.ts          灵魂:系统提示词 + 方法库 + 记忆模板
+  orchestrator.ts     组装消息(注入记忆 + RAG 方法参考)
+  deepseek.ts         DeepSeek 流式 / 非流式客户端
   safety.ts           危机识别与确定性回应
+  embeddings.ts       BGE-M3 向量化(SiliconFlow)
+  corpus.ts           语料与索引加载
+  retrieve.ts         语义检索(软失败)
+data/
+  corpus.json         技术卡片语料
+  corpus-index.json   向量索引(build:index 生成,不入库)
+scripts/
+  build-index.mjs     离线构建向量索引
 ```
 
 ## 设计原则

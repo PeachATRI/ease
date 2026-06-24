@@ -11,6 +11,7 @@
 
 import { withMemory } from './prompts';
 import type { ChatMessage } from './deepseek';
+import type { Retrieved } from './retrieve';
 
 export type ClientMessage = {
   role: 'user' | 'assistant';
@@ -20,9 +21,32 @@ export type ClientMessage = {
 // 只保留最近若干轮进入上下文;更早的对话由"长期记忆"承载,不丢失。
 const MAX_HISTORY = 24;
 
-export function buildMessages(history: ClientMessage[], memory = ''): ChatMessage[] {
+/**
+ * 把检索到的技术卡片,拼成一段"内部方法参考"。
+ * 关键:强约束模型把它消化成温柔的大白话,绝不引用、不报书名、不掉术语——
+ * 这是 RAG 不变成"爹味"的命门。
+ */
+function methodReference(cards: Retrieved[]): string {
+  if (cards.length === 0) return '';
+  const body = cards
+    .map((r) => `- 【${r.card.technique}】${r.card.guidance}`)
+    .join('\n');
+  return (
+    `\n\n# 内部方法参考(仅供你参考,绝不要直接念给对方听)\n\n` +
+    `根据对方此刻的话,以下方法可能用得上。请把它们消化成你自己温柔、口语的话,自然地融进对话——` +
+    `绝不引用原文、不报方法名/书名、不堆术语、不说教。先共情,再(如果合适)轻轻用上其中的思路。` +
+    `如果对方只是想倾诉,就忽略这些,好好听。\n\n${body}`
+  );
+}
+
+export function buildMessages(
+  history: ClientMessage[],
+  memory = '',
+  cards: Retrieved[] = [],
+): ChatMessage[] {
   const trimmed = history.slice(-MAX_HISTORY);
-  return [{ role: 'system', content: withMemory(memory) }, ...trimmed];
+  const system = withMemory(memory) + methodReference(cards);
+  return [{ role: 'system', content: system }, ...trimmed];
 }
 
 export function lastUserText(history: ClientMessage[]): string {

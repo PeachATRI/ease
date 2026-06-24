@@ -11,6 +11,7 @@ import { NextRequest } from 'next/server';
 import { detectCrisis, CRISIS_RESPONSE } from '@/lib/safety';
 import { buildMessages, lastUserText, type ClientMessage } from '@/lib/orchestrator';
 import { streamChat, mockStream, hasApiKey } from '@/lib/deepseek';
+import { retrieve } from '@/lib/retrieve';
 
 export const runtime = 'nodejs';
 
@@ -57,7 +58,9 @@ export async function POST(req: NextRequest) {
     if (!hasApiKey()) {
       return new Response(mockStream(), { headers: STREAM_HEADERS });
     }
-    const messages = buildMessages(history, memory);
+    // RAG:检索相关技术卡片(软失败,失败则无增强照常聊)
+    const cards = await retrieve(userText);
+    const messages = buildMessages(history, memory, cards);
     const stream = await streamChat(messages);
     return new Response(stream, { headers: STREAM_HEADERS });
   } catch (err) {
