@@ -39,13 +39,28 @@ function methodReference(cards: Retrieved[]): string {
   );
 }
 
+/**
+ * 把对方最近的"小步/习惯"作为背景告诉 Ease——像朋友本来就知道你在忙的事。
+ * 约束:只在自然的时候提起、庆祝努力、绝不催促或因漏打卡而评判。
+ */
+function trackerContext(tracker: string): string {
+  if (!tracker || !tracker.trim()) return '';
+  return (
+    `\n\n# 对方最近在做的小事(你作为朋友本就知道)\n\n` +
+    tracker.trim() +
+    `\n\n只在自然、合适的时候轻轻提起(比如对方聊到相关的事),像朋友一样为ta的努力高兴。` +
+    `绝不要催促、不要因为ta某天没打卡就提醒或评判,也不要每次都查岗似的问进度。`
+  );
+}
+
 export function buildMessages(
   history: ClientMessage[],
   memory = '',
   cards: Retrieved[] = [],
+  tracker = '',
 ): ChatMessage[] {
   const trimmed = history.slice(-MAX_HISTORY);
-  const system = withMemory(memory) + methodReference(cards);
+  const system = withMemory(memory) + methodReference(cards) + trackerContext(tracker);
   return [{ role: 'system', content: system }, ...trimmed];
 }
 

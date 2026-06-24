@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { GREETING } from '@/lib/prompts';
+import Tracker from '@/components/Tracker';
+import { loadItems, summarize, type TrackerItem } from '@/lib/tracker';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -36,8 +38,10 @@ export default function Home() {
   const [messages, setMessages] = useState<Msg[]>(initialThread);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   const memoryRef = useRef('');
+  const trackerRef = useRef('');
   const summarizedRef = useRef(0);
   const threadRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -54,6 +58,7 @@ export default function Home() {
       }
       memoryRef.current = localStorage.getItem(LS.memory) || '';
       summarizedRef.current = Number(localStorage.getItem(LS.summarized) || '0') || 0;
+      trackerRef.current = summarize(loadItems());
     } catch {
       /* localStorage 不可用就用默认 */
     }
@@ -138,7 +143,11 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next, memory: memoryRef.current }),
+        body: JSON.stringify({
+          messages: next,
+          memory: memoryRef.current,
+          tracker: trackerRef.current,
+        }),
       });
       if (!res.body) throw new Error('no body');
 
@@ -190,6 +199,14 @@ export default function Home() {
     <>
       <div className="ambient" aria-hidden />
 
+      <Tracker
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        onChange={(items: TrackerItem[]) => {
+          trackerRef.current = summarize(items);
+        }}
+      />
+
       {hydrated && !consented && (
         <div className="consent-mask">
           <div className="consent">
@@ -215,6 +232,9 @@ export default function Home() {
         <header className="header">
           <h1>Ease</h1>
           <p>慢慢说,我一直在</p>
+          <button className="steps-btn" onClick={() => setPanelOpen(true)}>
+            小步
+          </button>
           <button className="reset" onClick={reset}>
             重新开始
           </button>

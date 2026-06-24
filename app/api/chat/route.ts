@@ -40,10 +40,12 @@ const STREAM_HEADERS = {
 export async function POST(req: NextRequest) {
   let history: ClientMessage[] = [];
   let memory = '';
+  let tracker = '';
   try {
     const body = await req.json();
     history = Array.isArray(body?.messages) ? body.messages : [];
     memory = typeof body?.memory === 'string' ? body.memory : '';
+    tracker = typeof body?.tracker === 'string' ? body.tracker : '';
   } catch {
     return new Response('请求格式有误', { status: 400 });
   }
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
     // RAG:检索相关技术卡片(软失败,失败则无增强照常聊)
     const cards = await retrieve(userText);
-    const messages = buildMessages(history, memory, cards);
+    const messages = buildMessages(history, memory, cards, tracker);
     const stream = await streamChat(messages);
     return new Response(stream, { headers: STREAM_HEADERS });
   } catch (err) {
