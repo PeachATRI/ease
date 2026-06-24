@@ -38,9 +38,11 @@ const STREAM_HEADERS = {
 
 export async function POST(req: NextRequest) {
   let history: ClientMessage[] = [];
+  let memory = '';
   try {
     const body = await req.json();
     history = Array.isArray(body?.messages) ? body.messages : [];
+    memory = typeof body?.memory === 'string' ? body.memory : '';
   } catch {
     return new Response('请求格式有误', { status: 400 });
   }
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!hasApiKey()) {
       return new Response(mockStream(), { headers: STREAM_HEADERS });
     }
-    const messages = buildMessages(history);
+    const messages = buildMessages(history, memory);
     const stream = await streamChat(messages);
     return new Response(stream, { headers: STREAM_HEADERS });
   } catch (err) {

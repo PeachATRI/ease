@@ -85,6 +85,30 @@ export async function streamChat(messages: ChatMessage[]): Promise<ReadableStrea
 }
 
 /**
+ * 非流式调用,返回完整文本。用于记忆压缩等后台任务。
+ */
+export async function complete(messages: ChatMessage[]): Promise<string> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY 未配置');
+
+  const res = await fetch(`${BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ model: MODEL, messages, stream: false, temperature: 0.3 }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`DeepSeek 请求失败 (${res.status}): ${detail}`);
+  }
+  const json = await res.json();
+  return json?.choices?.[0]?.message?.content ?? '';
+}
+
+/**
  * 没有配置 API Key 时的占位回应,让界面与流程能先跑起来。
  */
 export function mockStream(): ReadableStream<Uint8Array> {

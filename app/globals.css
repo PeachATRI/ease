@@ -31,6 +31,57 @@ body {
   line-height: 1.7;
 }
 
+/* 会缓慢呼吸的环境背景——把对话的"气氛/轨迹"承托在身后,而非堆成图表 */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg);
+}
+.ambient::before,
+.ambient::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  will-change: transform, opacity;
+}
+.ambient::before {
+  width: 60vmax;
+  height: 60vmax;
+  top: -20vmax;
+  left: -15vmax;
+  background: radial-gradient(circle, rgba(124, 154, 130, 0.28), transparent 70%);
+  animation: breathe 14s ease-in-out infinite;
+}
+.ambient::after {
+  width: 50vmax;
+  height: 50vmax;
+  bottom: -18vmax;
+  right: -12vmax;
+  background: radial-gradient(circle, rgba(214, 188, 152, 0.3), transparent 70%);
+  animation: breathe 18s ease-in-out infinite reverse;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.42;
+  }
+  50% {
+    transform: scale(1.12) translate(2vmax, 1vmax);
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient::before,
+  .ambient::after {
+    animation: none;
+  }
+}
+
 .app {
   max-width: 720px;
   margin: 0 auto;
@@ -57,6 +108,73 @@ body {
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 4px;
+}
+
+.reset {
+  position: absolute;
+  top: 22px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  cursor: pointer;
+  opacity: 0.6;
+  font-family: inherit;
+}
+.reset:hover {
+  opacity: 1;
+}
+
+/* 首次进入的协议声明 */
+.consent-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(58, 58, 54, 0.28);
+  backdrop-filter: blur(3px);
+}
+.consent {
+  background: var(--surface);
+  max-width: 460px;
+  width: 100%;
+  border-radius: 24px;
+  padding: 28px 26px 22px;
+  box-shadow: var(--shadow);
+}
+.consent h2 {
+  font-size: 19px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.consent p {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+.consent .fine {
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+.consent button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.consent button:hover {
+  opacity: 0.92;
 }
 
 .thread {

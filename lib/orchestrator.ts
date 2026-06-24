@@ -9,7 +9,7 @@
  * 分类结果可以在这里拼进 system 提示词。
  */
 
-import { SYSTEM_PROMPT } from './prompts';
+import { withMemory } from './prompts';
 import type { ChatMessage } from './deepseek';
 
 export type ClientMessage = {
@@ -17,12 +17,12 @@ export type ClientMessage = {
   content: string;
 };
 
-// 只保留最近若干轮,控制上下文长度与成本
-const MAX_HISTORY = 20;
+// 只保留最近若干轮进入上下文;更早的对话由"长期记忆"承载,不丢失。
+const MAX_HISTORY = 24;
 
-export function buildMessages(history: ClientMessage[]): ChatMessage[] {
+export function buildMessages(history: ClientMessage[], memory = ''): ChatMessage[] {
   const trimmed = history.slice(-MAX_HISTORY);
-  return [{ role: 'system', content: SYSTEM_PROMPT }, ...trimmed];
+  return [{ role: 'system', content: withMemory(memory) }, ...trimmed];
 }
 
 export function lastUserText(history: ClientMessage[]): string {
