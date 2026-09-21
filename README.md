@@ -1,5 +1,7 @@
 # Ease
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > 当你焦虑、纠结、内耗的时候,有一个懂方法、又先懂你的伙伴,陪你把这一刻走过去。
 
 一个面向产品的网页版陪伴智能体。它会根据你当下的状态,在「温柔陪伴」和「理性教练」两档之间切换,用有循证依据的心理学方法(CBT / ACT / 自我关怀 / 正念)陪你松开焦虑、纠结和内耗——而你感受不到任何术语。
